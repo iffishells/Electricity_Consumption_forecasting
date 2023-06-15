@@ -1,1 +1,1 @@
-# Electricity Consumtion forecasting
+# Electricity Consumption forecasting
