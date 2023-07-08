@@ -348,7 +348,7 @@ if __name__=='__main__':
     comnbineDf = pd.concat(conct_list)
     comnbineDf.sort_values(by='Timestamp',inplace=True)
 
-    os.makedirs('HourlyData',exist_ok=True)
+    # os.makedirs('HourlyData',exist_ok=True)
   
     hourly_df = perform_downsampling(comnbineDf, freq='1H')
     # hourly_df.to_csv('HourlyData/hourlyDf.csv',index=False)
@@ -368,7 +368,7 @@ if __name__=='__main__':
 
     
     batch_size = 64
-    epochs = 75
+    epochs = 5
 
     steps_per_epoch = 200
     lstm_units = 200
