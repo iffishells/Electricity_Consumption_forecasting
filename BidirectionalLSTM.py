@@ -333,27 +333,27 @@ if __name__=='__main__':
     
     
     # # loading the datasets from different files 
-    # path_lists = glob.glob('GreenD_reduced_version_03/'+'*.csv')
-    # sorted_file_paths = sorted(path_lists)
-    # sorted_file_paths = sorted(path_lists, key=extract_digits)
+    path_lists = glob.glob('GreenD_reduced_version_03/'+'*.csv')
+    sorted_file_paths = sorted(path_lists)
+    sorted_file_paths = sorted(path_lists, key=extract_digits)
     
-    # conct_list = []
-    # for path in tqdm(sorted_file_paths ,desc='processing'):
+    conct_list = []
+    for path in tqdm(sorted_file_paths ,desc='processing'):
         
-    #     data = pd.read_csv(path)
-    #     data['Timestamp'] = pd.to_datetime(data['Timestamp'],utc=True,unit='s')#format='%Y-%m-%d %H-%M-%S')
-    #     data['Timestamp'] = data['Timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
-    #     conct_list.append(data)
+        data = pd.read_csv(path)
+        data['Timestamp'] = pd.to_datetime(data['Timestamp'],utc=True,unit='s')#format='%Y-%m-%d %H-%M-%S')
+        data['Timestamp'] = data['Timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        conct_list.append(data)
         
-    # comnbineDf = pd.concat(conct_list)
-    # comnbineDf.sort_values(by='Timestamp',inplace=True)
+    comnbineDf = pd.concat(conct_list)
+    comnbineDf.sort_values(by='Timestamp',inplace=True)
 
-    # os.makedirs('HourlyData',exist_ok=True)
+    os.makedirs('HourlyData',exist_ok=True)
   
-    # hourly_df = perform_downsampling(comnbineDf, freq='1H')
+    hourly_df = perform_downsampling(comnbineDf, freq='1H')
     # hourly_df.to_csv('HourlyData/hourlyDf.csv',index=False)
     
-    hourly_df =  pd.read_csv('HourlyData/hourlyDf.csv')
+    # hourly_df =  pd.read_csv('HourlyData/hourlyDf.csv')
     hourly_df =  create_features(hourly_df,'Timestamp')
     hourly_df['TimeOfDay'] = hourly_df['TimeOfDay'].map({'Night': 0, 'Morning': 1, 'Afternoon': 2, 'Evening': 3})
     
