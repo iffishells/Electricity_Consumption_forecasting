@@ -173,6 +173,8 @@ def create_model(num_input_days, lstm_units, dense_units, learning_rate,input_sh
 def train_and_evaluate_model(model, train_input, train_output, val_input, val_output, batch_size, epochs, steps_per_epoch):
     # Train the model
     history = model.fit(train_input, train_output, epochs=epochs, batch_size=batch_size, steps_per_epoch=steps_per_epoch, validation_data=(val_input, val_output))
+    
+    dump(model, 'ModelFiles/bidirectionalLstm.pkl')
 
     # Evaluate the model
     loss = model.evaluate(val_input, val_output)
@@ -226,6 +228,7 @@ def create_features(df, timestamp_col):
 
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_absolute_percentage_error
+from sklearn.preprocessing import MinMaxScaler
 
 def evaluate_model(model, test_input, test_output, scaler):
     # Predict the output for the test input
@@ -307,7 +310,7 @@ def create_Features_Scaling(hourly_df,num_input_days=72,num_forecast_hours=1):
 
 
 
-    from sklearn.preprocessing import MinMaxScaler
+
 
     minMaxScaler = MinMaxScaler(feature_range=(0,1))
 
@@ -322,6 +325,8 @@ def create_Features_Scaling(hourly_df,num_input_days=72,num_forecast_hours=1):
     TimeOfDay_scaler = minMaxScaler.fit_transform(TimeOfDay)
     Summe_ahead_scaler = minMaxScaler.fit_transform(Summe_ahead)
     
+    dump(minMaxScaler, 'ModelFiles/scaler.pkl')
+
     X =  np.stack([Summe_scaler, Year_scaler,Month_scaler,Day_scaler,Minute_scaler,DayOfWeek_scaler,Weekend_scaler,Holiday_scaler,TimeOfDay_scaler],axis=2)
     Y =  Summe_ahead_scaler
     
@@ -368,7 +373,7 @@ if __name__=='__main__':
 
     
     batch_size = 64
-    epochs = 5
+    epochs = 75
 
     steps_per_epoch = 200
     lstm_units = 200
@@ -376,7 +381,6 @@ if __name__=='__main__':
     learning_rate = 0.001
     input_shape = (train_input.shape[1] , train_input.shape[2])
     model = create_model(past_input_timesteps, lstm_units, dense_units, learning_rate,input_shape)
-#     dump(model, 'ModelFiles/bidirectionalLstm.pkl')
         
     history, loss = train_and_evaluate_model(model, train_input, train_output, val_input, val_output, batch_size, epochs, steps_per_epoch)
     
@@ -385,6 +389,7 @@ if __name__=='__main__':
 
 
 #     # Load the saved scaler
-#     scaler = load('ModelFiles/scaler.pkl')
+    scaler = load('ModelFiles/scaler.pkl')
+    model = load('ModelFiles/bidirectionalLstm.pkl')
 
-    evaluate_model(model, test_input, test_output, scaler)
+    evaluate_model(model, input_seq_test, output_seq_test, scaler)
