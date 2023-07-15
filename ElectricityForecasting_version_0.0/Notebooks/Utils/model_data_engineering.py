@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 
 from joblib import dump, load
 def create_Features_Scaling(hourly_df,num_input_hours=72,num_forecast_hours=1):
+    configFileName ='../ConfigFiles' 
+    os.makedirs(f'{configFileName}',exist_ok=True)
 
     Year = []
     Month = []
@@ -55,15 +57,14 @@ def create_Features_Scaling(hourly_df,num_input_hours=72,num_forecast_hours=1):
     TimeOfDay_scaler = minMaxScaler.fit_transform(TimeOfDay)
     Summe_ahead_scaler = minMaxScaler.fit_transform(Summe_ahead)
 
-        
-    # Get the current date and time
+
     current_time = datetime.now()
 
     # Format the current time
     formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+    print('Saveing Scaler Model Successfully')
+    dump(minMaxScaler, f'{configFileName}/{formatted_time}_scaler.pkl')
 
-    # Print the formatted time
-    dump(minMaxScaler, f'../Config_files/{formatted_time}_scaler.pkl')
 
     X =  np.stack([Summe_scaler, Year_scaler,Month_scaler,Day_scaler,DayOfWeek_scaler,Weekend_scaler,Holiday_scaler,TimeOfDay_scaler],axis=2)
     Y =  Summe_ahead_scaler
