@@ -33,7 +33,7 @@ from tensorflow.keras.optimizers import Adam
 from joblib import dump, load
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 from datetime import datetime
-
+import os
 
 def bi_directional_lstm_model(param,train_input,train_output,val_input,val_output):
    
