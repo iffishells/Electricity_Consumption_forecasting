@@ -46,7 +46,7 @@ def bi_directional_lstm_model(param,train_input,train_output,val_input,val_outpu
 
    model.add(Flatten())
    model.add(Dense(param['dense_units'], activation='relu'))
-   model.add(Dense(param['num_forecast_hours'], activation='linear'))
+   model.add(Dense(param['forecast_points'], activation='linear'))
 
    # Compile the model
    optimizer = Adam(learning_rate=param['learning_rate'])
@@ -64,7 +64,7 @@ def bi_directional_lstm_model(param,train_input,train_output,val_input,val_outpu
    model_params = model.count_params()
 
    # Create the model name based on parameters and training settings
-   model_name = f"model_{param['epochs']}_epochs_{param['batch_size']}_{model_params}_params_input_window_{param['num_input_days']}"
+   model_name = f"model_{param['epochs']}_epochs_{param['batch_size']}_{model_params}_params_input_window_{param['lookback_window']}"
 
    # Define early stopping callback
    early_stopping = EarlyStopping(patience=5, monitor='val_loss', restore_best_weights=True)
@@ -79,7 +79,7 @@ def bi_directional_lstm_model(param,train_input,train_output,val_input,val_outpu
    history = model.fit(train_input, train_output, #validation_data=(x_val, y_val), 
                      epochs=param['epochs'], 
                      batch_size=param['batch_size'], 
-                     verbose=2,
+                     verbose=1,
                      validation_data=(val_input, val_output),
                      callbacks=[early_stopping, 
                               tb_callback, 
@@ -92,5 +92,87 @@ def bi_directional_lstm_model(param,train_input,train_output,val_input,val_outpu
    print('Saveing Model Successfully')
    dump(model, f'{configFileName}/{formatted_time}_bidirectionalLstm.pkl')
 
+
+   return model
+
+
+
+def lstm_model(param, train_input, train_output, val_input, val_output):
+   configFileName = '../ConfigFiles'
+   os.makedirs(f'{configFileName}', exist_ok=True)
+
+   model = Sequential()
+   # model.add(LSTM(param['lstm_units'], return_sequences=True, input_shape=param['input_shape']))
+   # model.add(LSTM(param['lstm_units'], return_sequences=True))
+   # model.add(Dense(param['dense_units'], activation='relu'))
+   # model.add(Dense(param['forecast_points'], activation='linear'))
+
+   
+   #
+   model.add(LSTM(param['lstm_units'], return_sequences=True, input_shape=param['input_shape']))
+   model.add(LSTM(param['lstm_units']+50, return_sequences=True))
+   model.add(LSTM(param['lstm_units']+100, return_sequences=False))
+
+   model.add(Dense(param['dense_units'], activation='relu'))
+   model.add(Dense(param['dense_units']+100, activation='relu'))
+
+   model.add(Dense(param['forecast_points'], activation='linear'))
+   optimizer = Adam(learning_rate=param['learning_rate'])
+   model.compile(optimizer=optimizer, loss='mse')
+
+#     model.add(LSTM(param['lstm_units'], return_sequences=True, input_shape=param['input_shape']))
+   # model.add(LSTM(param['lstm_units'], return_sequences=True))
+   # model.add(TimeDistributed(Dense(param['dense_units'], activation='relu')))
+   # model.add(TimeDistributed(Dense(param['forecast_points'], activation='linear')))
+
+
+   # model.add(LSTM(param['lstm_units'], return_sequences=True, input_shape=param['input_shape']))
+   # model.add(LSTM(param['lstm_units'], return_sequences=True))
+   # model.add(TimeDistributed(Dense(param['dense_units'], activation='relu')))
+   # model.add(TimeDistributed(Dense(param['forecast_points'], activation='linear')))
+
+
+
+   # Get the model's parameters
+   model_params = model.count_params()
+
+   # Create the model name based on parameters and training settings
+   model_name = f"model_{param['epochs']}_epochs_{param['batch_size']}_{model_params}_params_input_window_{param['lookback_window']}"
+
+   # Define early stopping callback
+   early_stopping = EarlyStopping(patience=10, monitor='val_loss', restore_best_weights=True)
+
+   # Define TensorBoard callback with model-specific log folder
+   tb_callback = TensorBoard(log_dir=f'logs/{model_name}/', write_graph=False, update_freq='epoch')
+
+   # Define model checkpoint callback with model-specific filename
+   checkpoint_callback = ModelCheckpoint(f'checkpoints/{model_name}_{{epoch:02d}}.h5', save_weights_only=True, save_best_only=True)
+   print(param['input_shape'])
+   # Train the model with early stopping, checkpoints, and TensorBoard
+   history = model.fit(train_input, train_output,
+                     epochs=param['epochs'],
+                     batch_size=param['batch_size'],
+                     verbose=1,
+                     validation_data=(val_input, val_output),
+                     callbacks=[early_stopping,
+                                 tb_callback,
+                                 checkpoint_callback])
+   
+   
+   plt.figure(figsize=(8,6))
+   plt.plot(history.history['loss'],label='Training Loss')
+   plt.plot(history.history['val_loss'],label='Validation Loss')
+   plt.xlabel('Epochs')
+   plt.ylabel ('Loss')
+   plt.title('Training Loss vs Validation Loss')
+   plt.legend()
+   plt.show()
+
+   current_time = datetime.now()
+
+   # Format the current time
+   formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+   print('Saving Model Successfully')
+   dump(model, f'{configFileName}/{formatted_time}_lstmModel.pkl')
 
    return model

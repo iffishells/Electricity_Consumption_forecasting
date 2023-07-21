@@ -1,5 +1,6 @@
 import plotly.graph_objects as go  # Library for creating interactive plots
-
+import numpy as np
+import os
 def plot(df,x_feature_name,y_feature_name,title,preview=False):
     """
     This function takes two dataframes as input and plots the number of calls per day and per week.
@@ -46,3 +47,47 @@ def plot(df,x_feature_name,y_feature_name,title,preview=False):
         return fig 
     else:
         return fig
+import plotly.graph_objects as go
+
+def plot_with_difference_curve(predicted, actual,count,msg):
+    # Create the trace for the first array
+    trace1 = go.Scatter(
+        x=list(range(len(predicted))),
+        y=predicted,
+        mode='lines+markers',
+        name='Predicted'
+    )
+
+    # Create the trace for the second array
+    trace2 = go.Scatter(
+        x=list(range(len(actual))),
+        y=actual,
+        mode='lines+markers',
+        name='Actual'
+    )
+
+    # # Calculate the difference between the arrays
+    # difference = [np.abs(a - b) for a, b in zip(predicted, actual)]
+
+    # # Create the trace for the difference curve                                                 
+    # trace_diff = go.Scatter(
+    #     x=list(range(len(difference))),
+    #     y=difference,
+    #     mode='lines+markers',
+    #     name='Difference'
+    # )
+
+    # Create the layout
+    layout = go.Layout(
+        title=f'Error Metics : {msg}',
+        xaxis=dict(title='Index'),
+        yaxis=dict(title='Value'),
+        height=600,
+        width=1200
+    )
+
+    # Create the figure and add the traces
+    fig = go.Figure(data=[trace1, trace2], layout=layout)
+    # fig.show()
+    # Show the figure
+    fig.write_image(f'Plots_lstm/{count}.png')
