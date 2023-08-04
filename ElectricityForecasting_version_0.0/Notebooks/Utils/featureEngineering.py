@@ -1,5 +1,12 @@
 import pandas as pd
 from pandas.tseries.holiday import USFederalHolidayCalendar as calendar
+import holidays
+
+# Define a function to check if a given date is a holiday
+def is_holiday(date):
+    at_holidays = holidays.Austria(years=date.year)
+    return date in at_holidays
+
 def creating_more_features(df, timestamp_col):
     """
     Create time series features from datetime index.
@@ -22,11 +29,19 @@ def creating_more_features(df, timestamp_col):
     df['Weekend'] = df['DayOfWeek'].apply(lambda x: 1 if x >= 5 else 0)  # 1 if the day is weekend
 
     # Consider holidays if your data has specific trends on holidays
-    cal = calendar()
-    holidays = cal.holidays(start=df[timestamp_col].min(), end=df[timestamp_col].max())
-    df['Holiday'] = df[timestamp_col].isin(holidays).astype(int)  # 1 if the day is a US Federal holiday
+
+
+    # Apply the function to create a new 'Holiday' column
+    df['Holiday'] = df['Timestamp'].apply(is_holiday).astype(int)
+
 
     # You may also consider to create a feature that represents the time of the day (morning, afternoon, evening, night)
     df['TimeOfDay'] = pd.cut(df['Hour'], bins=[-0.1, 6, 12, 18, 24], labels=['Night', 'Morning', 'Afternoon', 'Evening'])
     
     return df
+
+
+# features_df['Timestamp'] = pd.to_datetime(features_df['Timestamp'])
+
+
+
